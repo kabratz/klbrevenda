@@ -11,13 +11,13 @@ const app = createApp(App);
 import ExampleComponent from './components/ExampleComponent.vue';
 import ListProducts from './components/admin/ListProducts.vue';
 import ImportProducts from './components/admin/ImportProducts.vue';
-import Cart from './components/Cart.vue';
+import Header from './components/admin/Header.vue';
 
 // Registra os componentes globalmente
 app.component('example-component', ExampleComponent);
 app.component('list-products', ListProducts);
 app.component('import-products', ImportProducts);
-app.component('cart-component', Cart);
+app.component('header-admin', Header);
 
 
 // Registra a diretiva globalmente

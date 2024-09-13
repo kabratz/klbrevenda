@@ -1,458 +1,3 @@
-<style scoped>
-.product-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  /* background-color: #eee; */
-  margin-right: 20px;
-  margin-left: 20px;
-  justify-content: space-evenly;
-}
-
-.product-item {
-  background-color: #fff;
-  flex: 0 0 calc(31.333333% - 20px - 8px);
-  max-width: calc(32.333333% - 20px);
-  text-align: center;
-  text-align: -webkit-center;
-  padding: 20px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  margin-bottom: 20px;
-}
-
-.out-of-stock {
-  cursor: default;
-}
-.product-item:hover {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-.out-of-stock:hover {
-  box-shadow: none;
-}
-.product-item button {
-  cursor: pointer;
-}
-
-.out-of-stock button {
-  cursor: default;
-}
-
-.product-item img {
-  height: 100%;
-  max-height: 200px;
-  max-width: 100%;
-  width: auto;
-  transition: all 0.3s ease;
-}
-.out-of-stock img {
-  filter: grayscale(100%);
-  filter: opacity(50%);
-}
-.out-of-stock-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255, 255, 255, 0.5);
-  display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
-  z-index: 1;
-  background-color: rgba(255, 255, 255, 0.5);
-}
-.out-of-stock-overlay p {
-  color: #fff;
-  font-size: 12px;
-  font-weight: bold;
-  background-color: #007bff;
-  padding: 3px 10px;
-  border-radius: 8px;
-}
-.image-box {
-  width: 100%;
-  height: 200px;
-}
-
-.modal-content .image-box {
-  height: 300px;
-}
-
-/* Estilo do carrossel */
-.carousel {
-  position: relative;
-}
-
-.carousel-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  max-width: 300px;
-  z-index: 1;
-}
-
-/* Modal */
-.modal {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  transform: translate(0, 0) !important;
-  cursor: pointer;
-  padding: 0;
-}
-
-.modal-content {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
-  position: relative;
-  cursor: default;
-}
-
-.close {
-  position: absolute;
-  right: 20px;
-  top: 10px;
-  font-size: 24px;
-  cursor: pointer;
-}
-
-/* Header */
-/* Estilo para o cabeçalho */
-header {
-  background-color: #f8f8f8;
-  padding: 10px 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 99;
-}
-
-.container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* Estilo para o logotipo */
-.logo img {
-  height: 50px;
-}
-
-/* Barra de Navegação */
-.navbar ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  gap: 20px;
-}
-
-.navbar ul li {
-  display: inline;
-}
-
-.navbar ul li a {
-  text-decoration: none;
-  color: #333;
-  font-size: 16px;
-  transition: color 0.3s ease;
-}
-
-.navbar ul li a:hover .navbar ul li a.selected {
-  color: #007bff;
-}
-
-/* Barra de Busca */
-.search-bar {
-  display: flex;
-  align-items: center;
-}
-
-.search-bar input {
-  padding: 5px 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-right: 10px;
-}
-
-.search-bar button {
-  padding: 5px 10px;
-  background-color: #007bff;
-  border: none;
-  color: white;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.search-bar button:hover {
-  background-color: #0056b3;
-}
-
-/* Ícone do Carrinho */
-
-.cart-icon img {
-  width: 30px;
-}
-
-/* Dropdown marcas */
-/* Dropdown de Marcas */
-.navbar {
-  z-index: 99;
-  gap: 50px;
-}
-
-.navbar ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  gap: 20px;
-}
-
-.navbar ul li {
-  position: relative;
-  display: inline-block;
-  flex: 0 0 calc(20% - 20px - 8px);
-}
-
-.navbar ul li a {
-  text-decoration: none;
-  color: #333;
-  font-size: 16px;
-  transition: color 0.3s ease;
-}
-
-.navbar ul .dropdown li a:hover,
-.navbar ul li a:hover {
-  color: #007bff;
-  cursor: pointer;
-}
-
-header {
-  position: fixed;
-  width: -webkit-fill-available;
-  top: 0;
-  left: 0;
-}
-
-/* Estilo do dropdown de marcas */
-.navbar ul .dropdown {
-  /* display: none; */
-  position: fixed;
-  left: 0;
-  background-color: #fff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  z-index: 99;
-  width: 100%;
-  padding: 0;
-  text-align: left;
-  -webkit-column-count: 6;
-  -webkit-column-gap: 20px;
-  -moz-column-count: 6;
-  -moz-column-gap: 20px;
-  column-count: 6;
-  column-gap: 20px;
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.navbar ul li :hover .dropdown {
-  display: block;
-}
-
-.navbar ul .dropdown li {
-  padding: 10px;
-}
-
-.navbar ul .dropdown li a {
-  text-decoration: none;
-  color: #333;
-  font-size: 14px;
-  transition: background-color 0.3s ease;
-}
-
-.body-products {
-  margin-top: 100px;
-}
-
-/* Cart */
-
-.cart-count {
-  position: absolute;
-  top: 5px;
-  right: 0px;
-  background-color: red;
-  color: white;
-  padding: 5px;
-  border-radius: 50%;
-  font-size: 12px;
-}
-
-.cart-sidebar {
-  position: fixed;
-  right: -300px;
-  top: 75px;
-  width: 300px;
-  height: -webkit-fill-available;
-  background-color: white;
-  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
-  padding: 20px;
-  z-index: 95;
-  gap: 21px;
-  display: flex;
-  flex-direction: column;
-  transform: translateX(100%);
-  opacity: 0;
-  transition: transform 0.7s ease, opacity 0.7s ease;
-}
-
-.cart-sidebar.visible {
-  transform: translateX(0);
-  opacity: 1;
-  right: 0px;
-}
-
-.cart-sidebar img {
-  width: 30px;
-  height: 100%;
-}
-
-.cart-sidebar ul {
-  padding: 0;
-}
-
-.cart-sidebar li {
-  list-style: none;
-  display: flex;
-  justify-content: space-between;
-  gap: 5px;
-}
-
-.quantity-box {
-  display: flex;
-  gap: 5px;
-}
-
-.quantity-box button {
-  height: fit-content;
-}
-
-/* Formulário de Checkout */
-.checkout-form {
-  margin-top: 20px;
-}
-
-.checkout-form input {
-  padding: 5px;
-  margin-bottom: 10px;
-  width: calc(100% - 10px);
-}
-
-.checkout-form button {
-  padding: 10px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.checkout-form button:hover {
-  background-color: #218838;
-}
-.selected-filter {
-  background-color: #007bff80;
-  color: white;
-  padding: 5px;
-  border-radius: 8px;
-  margin-right: 5px;
-  cursor: pointer;
-  width: fit-content;
-}
-.selected-filters {
-  display: flex;
-  gap: 5px;
-  margin-top: 10px;
-}
-
-.open-header {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .open-header {
-    display: block;
-    cursor: pointer;
-  }
-  .header-container .navbar {
-    display: flex;
-    align-items: flex-start;
-    position: fixed;
-    left: -300px; /* Altere para posicionar o menu fora da tela à esquerda */
-    top: 75px;
-    width: 300px;
-    background-color: white;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
-    padding: 20px;
-    z-index: 95;
-    gap: 21px;
-    flex-direction: column;
-    transform: translateX(-100%);
-    opacity: 0;
-    transition: transform 0.7s ease, opacity 0.7s ease;
-    overflow: auto;
-    height: -webkit-fill-available;
-    justify-content: flex-start;
-  }
-
-  .header-container .navbar.visible {
-    transform: translateX(0);
-    opacity: 1;
-    left: 0;
-  }
-  .navbar ul {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-    flex-direction: column;
-  }
-
-  .navbar ul .dropdown {
-    flex-direction: column;
-    position: relative;
-    box-shadow: none;
-    gap: 0;
-  }
-  .navbar ul li {
-    display: block;
-    font-size: 18px;
-    flex: 0;
-  }
-
-  .navbar ul li a {
-    color: #333;
-    font-size: 24px;
-    transition: background-color 0.3s ease;
-  }
-  .product-item {
-    flex: 100%;
-    max-width: 100%;
-  }
-  .modal-content {
-    width: 80%;
-
-  }
-}
-</style>
-
 <template>
   <header>
     <div class="container header-container">
@@ -479,7 +24,7 @@ header {
       <nav class="navbar" :class="{ visible: navbarVisible }">
         <ul>
           <!-- Dropdown de Marcas -->
-          <li @click="showBrands = !showBrands" :class="{ selected: showBrands }">
+          <li @click="toggleBrands" :class="{ selected: showBrands }">
             <a href="#">Marcas</a>
             <ul v-if="showBrands" class="dropdown">
               <li v-for="brand in brands" :key="brand.id">
@@ -487,7 +32,7 @@ header {
               </li>
             </ul>
           </li>
-          <li @click="showCategories = !showCategories">
+          <li @click="toggleCategories" :class="{ selected: showCategories }">
             <a href="#">Produtos</a>
             <ul v-if="showCategories" class="dropdown">
               <li v-for="category in categories" :key="category.id">
@@ -498,7 +43,12 @@ header {
         </ul>
         <!-- Barra de Busca -->
         <div class="search-bar">
-          <input v-model="search" type="text" placeholder="Buscar..." @keyup.enter="filterBySearch()"/>
+          <input
+            v-model="search"
+            type="text"
+            placeholder="Buscar..."
+            @keyup.enter="filterBySearch()"
+          />
           <button @click.stop="filterBySearch()">Buscar</button>
         </div>
       </nav>
@@ -585,7 +135,8 @@ header {
         <span class="close" @click.stop="closeModal">&times;</span>
         <div class="image-box" :class="{ 'out-of-stock': modalProduct.quantity <= 0 }">
           <!-- Carrossel de imagens -->
-          <div v-if="modalProduct.images.lengfth" class="carousel">
+          <div v-if="modalProduct.images.length" class="carousel">
+            <!--             <button @click="currentImageIndex --"> < </button> -->
             <img
               :src="`/storage/${
                 modalProduct.images[currentImageIndex[modalProduct.id]]?.file
@@ -593,16 +144,18 @@ header {
               :alt="`${modalProduct.images[currentImageIndex[modalProduct.id]]?.name}`"
               class="carousel-image"
             />
+            <!--             <button @click="currentImageIndex ++"> > </button> -->
             <div v-if="modalProduct.quantity <= 0" class="out-of-stock-overlay">
               <p>Produto Indisponível</p>
             </div>
           </div>
         </div>
         <h2>{{ modalProduct.name }}</h2>
+        <h3>{{ currencyFormat(modalProduct.price) }}</h3>
         <p v-html="modalProduct.description"></p>
-        <div v-if="modalProduct.quantity > 0">
+        <div v-if="modalProduct.quantity > 0" class="box-quantity">
           <div>
-            <label for="quantity">Quantidade:</label>
+            <label for="quantity">Quantidade: </label>
             <input
               type="number"
               v-model="quantity"
@@ -626,8 +179,8 @@ header {
           />
           {{ item.name }} - {{ currencyFormat(item.price) }}
           <div class="quantity-box">
-            <button @click="removeFromCart(item)">-</button>{{ item.quantity
-            }}<button @click="addToCart(item)">+</button>
+            <button @click="removeFromCart(item)">-</button>{{ item.quantity }}
+            <button @click="addToCart(item)">+</button>
           </div>
         </li>
       </ul>
@@ -715,6 +268,21 @@ header {
       </div>
     </div>
   </div>
+  <footer>
+    <p>© 2024 - Todos os direitos reservados</p>
+
+    <a
+      href="https://www.linkedin.com/in/karoline-luersen-bratz/"
+      class="developer-info"
+      target="_blank"
+    >
+      <img
+        :src="`/storage/creator.jpeg`"
+        :alt="`Foto de Karoline Luersen Bratz, desenvolvedora do Site`"
+      />
+      <p>Desenvolvido por Karoline Luersen Bratz</p>
+    </a>
+  </footer>
 </template>
 
 <script>
@@ -976,6 +544,14 @@ export default {
     toggleNavbar() {
       this.navbarVisible = !this.navbarVisible;
       this.cartVisible = false;
+    },
+    toggleBrands() {
+      this.showBrands = !this.showBrands;
+      this.showCategories = false;
+    },
+    toggleCategories() {
+      this.showCategories = !this.showCategories;
+      this.showBrands = false;
     },
   },
 };

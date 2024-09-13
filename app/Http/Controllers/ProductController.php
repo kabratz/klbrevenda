@@ -112,7 +112,18 @@ class ProductController extends Controller
                 'product_id' => $product->id,
                 'category_id' => $row[11],
             ]);
+            
+            $categoriaAtual = Category::find($row[11])->parent_id;
 
+            while ($categoriaAtual) {
+                ProductsHasCategory::firstOrCreate([
+                    'product_id' => $product->id,
+                    'category_id' => $categoriaAtual,
+                ]);
+                
+                $categoriaAtual = Category::find($categoriaAtual)->parent_id;
+            }
+            
             $imageUrls = [$row[9], $row[10]];
 
 
@@ -207,22 +218,10 @@ class ProductController extends Controller
      */
     public function update(Request $request)
     {
-        $request->validate([
-            'id' => 'required|string|max:36',
-            'name' => 'required|string|max:100',
-            'description' => 'required|string',
-            'price' => 'required|numeric',
-            'quantity' => 'required|integer',
-            'google_product_category' => 'nullable|string',
-            'fb_product_category' => 'nullable|string',
-            'gender' => 'nullable|string|in:male,female,unisex',
-            'brand_id' => 'required|exists:brands,id',
-            'sku' => 'string|max:20',
-        ]);
-
         $id = $request->input('id');
-
+        
         $product = Product::findOrFail($id);
+        //dd($product);
         $product->name = $request->input('name');
         $product->description = $request->input('description');
         $product->price = $request->input('price');
@@ -231,9 +230,35 @@ class ProductController extends Controller
         $product->fb_product_category = $request->input('fb_product_category');
         $product->gender = $request->input('gender');
         $product->brand_id = $request->input('brand_id');
+        $product->sku = $request->input('sku');
         $product->save();
 
-        return response()->json(['message' => 'Product updated successfully', 'product' => $product]);
+        if ($request->has('images')) {
+            $images = $request->input('images');
+
+            foreach ($images as $key => $image) {
+                $imageId = $image['id'];
+                if ($imageId)
+                {
+                    $imageModel = Image::findOrFail($imageId);
+                    $imageModel->product_id = $product->id;
+                    $imageModel->file = $image['file'];
+                    $imageModel->save();
+                    continue;
+                }
+
+                $imageModel = Image::create([
+                    'id' => Str::uuid(),
+                    'name' => $image['name'],
+                    'file' => $image['file'],
+                    'product_id' => $product->id,
+                ]);
+                $product->images[$key] = $imageModel;
+            }
+        }
+
+
+        return response()->json(['success' => true, 'message' => 'Product updated successfully', 'product' => $product]);
     }
 
 
@@ -244,32 +269,41 @@ class ProductController extends Controller
             'category_id' => 'nullable|uuid',
             'search' => 'nullable|string',
         ]);
-    
+
         $brandId = $request->input('brand_id');
         $categoryId = $request->input('category_id');
         $search = $request->input('search');
-    
+
         $query = Product::with('brand', 'categories', 'images');
-    
+
         if ($brandId) {
             $query->whereHas('brand', function ($query) use ($brandId) {
                 $query->where('brands.id', $brandId); // Especifica a tabela 'brands'
             });
         }
-    
+
         if ($categoryId) {
             $query->whereHas('categories', function ($query) use ($categoryId) {
                 $query->where('categories.id', $categoryId); // Especifica a tabela 'categories'
             });
         }
-    
+
         if ($search) {
             $query->where('name', 'ilike', '%' . $search . '%');
         }
-    
+
         $products = $query->get();
-    
+
         return response()->json($products);
     }
-    
+
+    public function uploadImage(Request $request, $id)
+    {
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $path = $file->store('products', 'public');
+            return response()->json(['success' => true, 'imageUrl' => $path]);
+        }
+        return response()->json(['success' => false], 400);
+    }
 }
