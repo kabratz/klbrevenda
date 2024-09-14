@@ -71,7 +71,7 @@ class CategoriesSeeder extends Seeder
             DB::table('categories')->insert([
                 'id' => $categoryId,
                 'name' => $categoryName,
-                'parent_id' => $parentId,
+                'parent_id' => $parentId ? : null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

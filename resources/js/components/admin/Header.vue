@@ -4,7 +4,7 @@
       <!-- Logotipo -->
       <div class="logo">
         <a href="#">
-          <img :src="`/storage/logo.webp`" alt="logotipo" />
+          <img :src="`/logo.webp`" alt="logotipo" />
         </a>
       </div>
 

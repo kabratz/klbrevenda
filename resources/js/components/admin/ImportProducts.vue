@@ -49,7 +49,7 @@ export default {
       const formData = new FormData();
       formData.append("file", this.file);
 
-      fetch("/import-csv", {
+      fetch("/api/import-csv", {
         method: "POST",
         headers: {
           "X-CSRF-TOKEN": document

@@ -16,7 +16,7 @@
       <!-- Logotipo -->
       <div class="logo">
         <a href="#">
-          <img :src="`/storage/logo.webp`" :alt="`logotipo`" />
+          <img :src="`/logo.webp`" :alt="`logotipo`" />
         </a>
       </div>
 
@@ -101,11 +101,24 @@
         <div class="image-box">
           <!-- Carrossel de imagens -->
           <div v-if="product.images.length" class="carousel">
-            <img
-              :src="`/storage/${product.images[currentImageIndex[product.id]]?.file}`"
-              :alt="`${product.images[currentImageIndex[product.id]]?.name}`"
-              class="carousel-image"
-            />
+            <picture>
+              <source
+                :src="`/storage/${product.images[currentImageIndex[product.id]]?.file}`"
+                :alt="`${product.images[currentImageIndex[product.id]]?.name}`"
+              />
+              <source
+                :src="`/default.png`"
+                alt="Default Image"
+                style="cursor: pointer; width: 100px; height: 100px"
+              />
+              <img
+                :src="`/storage/${product.images[currentImageIndex[product.id]]?.file}`"
+                :alt="`${product.images[currentImageIndex[product.id]]?.name}`"
+                class="carousel-image"
+                @error="handleError"
+              />
+            </picture>
+
             <div v-if="product.quantity <= 0" class="out-of-stock-overlay">
               <p>Produto Indisponível</p>
             </div>
@@ -137,13 +150,27 @@
           <!-- Carrossel de imagens -->
           <div v-if="modalProduct.images.length" class="carousel">
             <!--             <button @click="currentImageIndex --"> < </button> -->
-            <img
-              :src="`/storage/${
-                modalProduct.images[currentImageIndex[modalProduct.id]]?.file
-              }`"
-              :alt="`${modalProduct.images[currentImageIndex[modalProduct.id]]?.name}`"
-              class="carousel-image"
-            />
+            <picture>
+              <source
+                :src="`/storage/${
+                  modalProduct.images[currentImageIndex[modalProduct.id]]?.file
+                }`"
+                :alt="`${modalProduct.images[currentImageIndex[modalProduct.id]]?.name}`"
+              />
+              <source
+                :src="`/default.png`"
+                alt="Default Image"
+                style="cursor: pointer; width: 100px; height: 100px"
+              />
+              <img
+                :src="`/storage/${
+                  modalProduct.images[currentImageIndex[modalProduct.id]]?.file
+                }`"
+                :alt="`${modalProduct.images[currentImageIndex[modalProduct.id]]?.name}`"
+                class="carousel-image"
+                @error="handleError"
+              />
+            </picture>
             <!--             <button @click="currentImageIndex ++"> > </button> -->
             <div v-if="modalProduct.quantity <= 0" class="out-of-stock-overlay">
               <p>Produto Indisponível</p>
@@ -277,7 +304,7 @@
       target="_blank"
     >
       <img
-        :src="`/storage/creator.jpeg`"
+        :src="`/creator.jpeg`"
         :alt="`Foto de Karoline Luersen Bratz, desenvolvedora do Site`"
       />
       <p>Desenvolvido por Karoline Luersen Bratz</p>
@@ -318,10 +345,10 @@ export default {
       orderConfirmationVisible: false,
       whatsappLink: "",
       navbarVisible: false,
+      setInterval: false,
     };
   },
   mounted() {
-    this.getProducts();
     this.loadCart();
     this.csrfToken = document
       .querySelector('meta[name="csrf-token"]')
@@ -339,13 +366,16 @@ export default {
         this.brands = response.data.brands;
         this.categories = response.data.categories;
 
-        this.products.forEach((product) => {
-          this.currentImageIndex[product.id] = 0;
-          setInterval(() => {
-            this.currentImageIndex[product.id] =
-              (this.currentImageIndex[product.id] + 1) % product.images.length;
-          }, 5000);
-        });
+        if (!this.setInterval) {
+          this.products.forEach((product) => {
+            this.currentImageIndex[product.id] = 0;
+            setInterval(() => {
+              this.currentImageIndex[product.id] =
+                (this.currentImageIndex[product.id] + 1) % product.images.length;
+            }, 5000);
+          });
+          this.setInterval = true;
+        }
       } catch (error) {
         console.error("Erro ao buscar produtos:", error);
       }
@@ -372,9 +402,14 @@ export default {
       this.modalProduct = product;
       this.quantity = 1;
       this.showModal = true;
+      this.showBrands = false;
+      this.showCategories = false;
+      this.cartVisible = false;
+      document.body.style.overflow = "hidden";
     },
     closeModal() {
       this.showModal = false;
+      document.body.style.overflow = "auto";
     },
     filterByBrand(brandId) {
       this.navbarVisible = false;
@@ -459,6 +494,10 @@ export default {
     toggleCart() {
       this.cartVisible = !this.cartVisible;
       this.navbarVisible = false;
+
+      this.showModal = false;
+      this.showBrands = false;
+      this.showCategories = false;
     },
 
     toggleCheckoutForm() {
@@ -491,7 +530,6 @@ export default {
             this.clearCart();
           })
           .catch((error) => {
-            console.log(error);
             if (error.response && error.response.status === 419) {
               alert("Por favor, atualize a página e tente novamente.");
               return;
@@ -548,10 +586,18 @@ export default {
     toggleBrands() {
       this.showBrands = !this.showBrands;
       this.showCategories = false;
+      this.showModal = false;
+      this.cartVisible = false;
     },
     toggleCategories() {
       this.showCategories = !this.showCategories;
       this.showBrands = false;
+      this.showModal = false;
+      this.cartVisible = false;
+    },
+
+    handleError(event) {
+      event.target.src = "/default.png";
     },
   },
 };

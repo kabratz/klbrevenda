@@ -188,9 +188,7 @@
     <div class="row justify-content-center">
       <div class="card">
         <div class="left-box">
-          <a href="/products/import" class="button-primary">
-            Importar de um csv
-          </a>
+          <a href="/products/import" class="button-primary"> Importar de um csv </a>
         </div>
         <div class="left-box">
           <button class="button-primary" @click="openCreateModal">
@@ -280,12 +278,27 @@
                       :key="image.id"
                       class="image-item"
                     >
-                      <img
-                        :src="`/storage/${image.file}`"
-                        alt="Product Image"
-                        @click="openImageModal(image.file)"
-                        style="cursor: pointer; width: 100px; height: 100px"
-                      />
+                      <picture>
+                        <source
+                          :src="`/storage/${image.file}`"
+                          :alt="image.name"
+                          @click="openImageModal(image.file)"
+                          style="cursor: pointer; width: 100px; height: 100px"
+                        />
+                        <source
+                          :src="`/default.png`"
+                          alt="Default Image"
+                          @click="openImageModal(image.file)"
+                          style="cursor: pointer; width: 100px; height: 100px"
+                        />
+                        <img
+                          :src="`/storage/${image.file}`"
+                          :alt="image.name"
+                          @click="openImageModal(image.file)"
+                          style="cursor: pointer; width: 100px; height: 100px"
+                          @error="handleError"
+                        />
+                      </picture>
                     </div>
                   </div>
                 </div>
@@ -363,6 +376,22 @@
             </select>
           </div>
 
+          <div class="form-group categories-group">
+            <label>Categorias:</label>
+            <div class="categories-group">
+              <label v-for="category in this.localProducts.categories" :key="category.id">
+                <input
+                  :key="category.id"
+                  :value="category.id"
+                  :id="category.id"
+                  v-model="editableProduct.categoriesId"
+                  type="checkbox"
+                />
+                {{ category.name }}
+              </label>
+            </div>
+          </div>
+
           <div class="images-section">
             <p><strong>Imagens:</strong></p>
             <div
@@ -374,8 +403,6 @@
                 type="file"
                 @change="handleImageUpload($event, editableProduct.id, index)"
               />
-
-              <!-- Exibe a pré-visualização se houver uma URL de pré-visualização, caso contrário, a imagem existente -->
               <img
                 :src="image.previewUrl || `/storage/${image.file}`"
                 alt="Preview Image"
@@ -383,9 +410,6 @@
                 @click="openImageModal(image.previewUrl || image.file)"
               />
 
-              <!-- Campo para adicionar imagem por URL (opcional) -->
-              <input v-model="imageUrls[index]" placeholder="Or enter image URL" />
-              <button @click="updateImageUrl(image.id, index)">Altere por URL</button>
               <button @click="removeImage(index)">Remover Imagem</button>
             </div>
             <button type="button" @click="addImageField()">Adicionar Nova Imagem</button>
@@ -422,7 +446,7 @@ export default {
   },
   data() {
     return {
-      localProducts: { products: [], brands: [] },
+      localProducts: { products: [], brands: [], categories: [] },
       activeProductId: null,
       isModalActive: false,
       editableProduct: {
@@ -444,7 +468,7 @@ export default {
     }
   },
   setup() {
-    const router = useRouter(); // Use the router instance
+    const router = useRouter();
 
     const handleLogout = () => {
       store.logout(); // Chama a mutação para deslogar
@@ -476,6 +500,7 @@ export default {
         ...product,
         brand_id: product.brand.id,
         images: product.images || [],
+        categoriesId: product.categories.map((category) => category.id),
       };
       this.imageUrls = this.editableProduct.images.map((img) => img.file || "");
       this.isModalActive = true;
@@ -498,6 +523,7 @@ export default {
         gender: "",
         brand_id: "",
         images: [],
+        categoriesId: [],
       };
       this.imageUrls = [];
       this.isModalActive = true;
@@ -519,6 +545,7 @@ export default {
         : "/api/products";
       const method = this.isEditing ? "PUT" : "POST";
 
+      this.editableProduct.description = this.quill.root.innerHTML;
       fetch(url, {
         method: method,
         headers: {
@@ -535,8 +562,9 @@ export default {
             if (this.isEditing) {
               this.fetchProducts();
             } else {
-              this.localProducts.push(data.product);
+              this.localProducts.products.push(data.product);
             }
+            alert("Produto salvo com sucesso!");
             this.closeModal();
           } else {
             console.error("Failed to save product:", data);
@@ -634,6 +662,9 @@ export default {
         current = current.parent;
       }
       return parents;
+    },
+    handleError(event) {
+      event.target.src = "/default.png";
     },
   },
   mounted() {

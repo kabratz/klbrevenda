@@ -291,6 +291,9 @@ header {
   padding: 5px;
   border-radius: 50%;
   font-size: 12px;
+  width: 15px;
+  height: 15px;
+  text-align: center;
 }
 
 .cart-sidebar {

@@ -98,6 +98,7 @@ export default {
       if (confirm("Você tem certeza que deseja remover esta marca? ")) {
         try {
           await axios.delete(`/api/brands/${brandId}`, {});
+          alert("Marca removida com sucesso!")
           window.location.reload();
         } catch (error) {
           console.error("Erro ao salvar a marca:", error);
@@ -145,6 +146,7 @@ export default {
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
+            alert("Marca salva com sucesso!");
             window.location.reload();
           } else {
             console.error("Failed to save product:", data);
@@ -174,7 +176,12 @@ export default {
   font-weight: bold;
 }
 
-
+.line{
+  display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
 .button-primary {
   background-color: #007bff;
   color: white;

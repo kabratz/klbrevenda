@@ -17,50 +17,8 @@ class ProductController extends Controller
     {
         $products = Product::with('brand')
             ->with('images')
-            ->with(['categories' => function ($query) {
-                $query->with('parent');
-            }])
-            ->get()
-            ->map(function ($product) {
-                return [
-                    'id' => $product->id ?? '',
-                    'name' => $product->name ?? '',
-                    'quantity' => $product->quantity ?? '',
-                    'description' => $product->description ?? '',
-                    'price' => $product->price ?? '',
-                    'gender' => $product->gender ?? '',
-                    'google_product_category' => $product->google_product_category ?? '',
-                    'fb_product_category' => $product->fb_product_category ?? '',
-                    'sku' => $product->sku ?? '',
-                    'brand' => $product->brand ? [
-                        'id' => $product->brand->id ?? '',
-                        'name' => $product->brand->name ?? '',
-                    ] : [
-                        'id' => '',
-                        'name' => ''
-                    ],
-                    'images' => $product->images->map(function ($image) {
-                        return [
-                            'id' => $image->id ?? '',
-                            'file' => $image->file ?? '',
-                            'name' => $image->name ?? '',
-                        ];
-                    }),
-                    'categories' => $product->categories->map(function ($category) {
-                        return [
-                            'id' => $category->id ?? '',
-                            'name' => $category->name ?? '',
-                            'parent' => $category->parent ? [
-                                'id' => $category->parent->id ?? '',
-                                'name' => $category->parent->name ?? '',
-                            ] : [
-                                'id' => '',
-                                'name' => ''
-                            ],
-                        ];
-                    }),
-                ];
-            });
+            ->with('categories')
+            ->get();
 
         $brands = Brand::all();
 
@@ -108,22 +66,17 @@ class ProductController extends Controller
                 ]
             );
 
-            ProductsHasCategory::firstOrCreate([
-                'product_id' => $product->id,
-                'category_id' => $row[11],
-            ]);
-            
-            $categoriaAtual = Category::find($row[11])->parent_id;
+            $categoriaAtual = Category::firstOrCreate(['name' => $row[11]])->id;
 
             while ($categoriaAtual) {
                 ProductsHasCategory::firstOrCreate([
                     'product_id' => $product->id,
                     'category_id' => $categoriaAtual,
                 ]);
-                
+
                 $categoriaAtual = Category::find($categoriaAtual)->parent_id;
             }
-            
+
             $imageUrls = [$row[9], $row[10]];
 
 
@@ -156,8 +109,7 @@ class ProductController extends Controller
                 }
             }
         }
-
-        return redirect()->back()->with('success', 'Products imported successfully!');
+        return response()->json(['success' => true, 'message' => 'Produtos Inseridos com sucesso'], 200);
     }
 
     /**
@@ -173,7 +125,7 @@ class ProductController extends Controller
             $product->delete();
             return response()->json(['message' => 'Product deleted successfully'], 200);
         } else {
-            return response()->json(['message' => 'Product not found'], 404);
+            return response()->json(['success' => true, 'message' => 'Product not found'], 404);
         }
     }
 
@@ -184,44 +136,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:100',
-            'description' => 'required|string',
-            'price' => 'required|numeric',
-            'quantity' => 'required|integer',
-            'google_product_category' => 'nullable|string',
-            'fb_product_category' => 'nullable|string',
-            'gender' => 'nullable|string|in:male,female,unisex',
-            'brand_id' => 'required|exists:brands,id',
-            'sku' => 'string|max:20',
-        ]);
-
         $product = new Product();
-        $product->name = $request->input('name');
-        $product->description = $request->input('description');
-        $product->price = $request->input('price');
-        $product->quantity = $request->input('quantity');
-        $product->google_product_category = $request->input('google_product_category');
-        $product->fb_product_category = $request->input('fb_product_category');
-        $product->gender = $request->input('gender');
-        $product->brand_id = $request->input('brand_id');
-        $product->save();
-
-        return response()->json(['message' => 'Product created successfully', 'product' => $product], 201);
-    }
-
-    /**
-     * Update the informed product
-     *
-     * @param Request $request
-     * @param string $id Product Id
-     */
-    public function update(Request $request)
-    {
-        $id = $request->input('id');
-        
-        $product = Product::findOrFail($id);
-        //dd($product);
         $product->name = $request->input('name');
         $product->description = $request->input('description');
         $product->price = $request->input('price');
@@ -233,13 +148,59 @@ class ProductController extends Controller
         $product->sku = $request->input('sku');
         $product->save();
 
+        $categories = $request->input('categoriesId');
+        $product->categories()->sync($categories);
+
+        $images = $request->input('images');
+        if($images) {
+            foreach ($images as $key => $image) {
+                if ($image['file']){
+                    $image = new Image();
+                    $image->name = 'Image ' . ($key + 1);
+                    $image->file = $image['file'];
+                    $image->product_id = $product->id;
+                    $image->save();
+                }
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => 'Product created successfully', 'product' => $product], 201);
+    }
+
+    /**
+     * Update the informed product
+     *
+     * @param Request $request
+     * @param string $id Product Id
+     */
+    public function update(Request $request)
+    {
+        $id = $request->input('id');
+
+        $product = Product::findOrFail($id);
+        $product->name = $request->input('name');
+        $product->description = $request->input('description');
+        $product->price = $request->input('price');
+        $product->quantity = $request->input('quantity');
+        $product->google_product_category = $request->input('google_product_category');
+        $product->fb_product_category = $request->input('fb_product_category');
+        $product->gender = $request->input('gender');
+        $product->brand_id = $request->input('brand_id');
+        $product->sku = $request->input('sku');
+        $product->save();
+
+        if ($request->has('categoriesId')) {
+            $categories = $request->input('categoriesId');
+            $product->categories()->sync($categories);
+        }
+
         if ($request->has('images')) {
             $images = $request->input('images');
 
+            dd($images);
             foreach ($images as $key => $image) {
                 $imageId = $image['id'];
-                if ($imageId)
-                {
+                if ($imageId) {
                     $imageModel = Image::findOrFail($imageId);
                     $imageModel->product_id = $product->id;
                     $imageModel->file = $image['file'];
@@ -249,7 +210,7 @@ class ProductController extends Controller
 
                 $imageModel = Image::create([
                     'id' => Str::uuid(),
-                    'name' => $image['name'],
+                    'name' => 'Image ' . ($key + 1),
                     'file' => $image['file'],
                     'product_id' => $product->id,
                 ]);
@@ -258,7 +219,7 @@ class ProductController extends Controller
         }
 
 
-        return response()->json(['success' => true, 'message' => 'Product updated successfully', 'product' => $product]);
+        return response()->json(['success' => true, 'message' => 'Product updated successfully', 'product' => $product->with('brand')->with(categories)]);
     }
 
 
@@ -278,13 +239,13 @@ class ProductController extends Controller
 
         if ($brandId) {
             $query->whereHas('brand', function ($query) use ($brandId) {
-                $query->where('brands.id', $brandId); // Especifica a tabela 'brands'
+                $query->where('brands.id', $brandId);
             });
         }
 
         if ($categoryId) {
             $query->whereHas('categories', function ($query) use ($categoryId) {
-                $query->where('categories.id', $categoryId); // Especifica a tabela 'categories'
+                $query->where('categories.id', $categoryId);
             });
         }
 

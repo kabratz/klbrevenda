@@ -9,8 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 class ProductsHasCategory extends Model
 {
     use HasFactory;
-    use HasUuids;
-
 
     /**
      * The attributes that are mass assignable.

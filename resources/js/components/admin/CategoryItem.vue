@@ -43,45 +43,47 @@ export default {
     },
   },
   setup(props) {
-    const isEditing = ref(false); // Estado de edição
-    const editedName = ref(props.category.name); // Nome editável
+    const isEditing = ref(false);
+    const editedName = ref(props.category.name);
 
-    // Inicia o modo de edição
     const toggleIsEditing = () => {
       isEditing.value = !isEditing.value;
     };
 
-    // Salva a edição e envia para o backend
     const saveEdit = async () => {
       try {
-        // Faz a requisição para atualizar a categoria
         await axios.put(`/api/categories/${props.category.id}`, {
           name: editedName.value,
         });
-        // Atualiza o nome localmente e sai do modo de edição
         props.category.name = editedName.value;
         isEditing.value = false;
+        alert("Categoria salva com sucesso!");
       } catch (error) {
+          alert("Erro ao salvar categoria! Tente novamente mais tarde.");
         console.error("Erro ao salvar a categoria:", error);
       }
     };
 
     const deleteCategory = async (categoryId) => {
-      if (confirm("Você tem certeza que deseja remover esta categoria? Isto irá remover as subcategorias também!")) {
+      if (
+        confirm(
+          "Você tem certeza que deseja remover esta categoria? Isto irá remover as subcategorias também!"
+        )
+      ) {
         try {
           await axios.delete(`/api/categories/${categoryId}`, {});
+          alert("Categoria removida com sucesso!");
           window.location.reload();
-
         } catch (error) {
+          alert("Erro ao remover categoria! Tente novamente mais tarde.");
           console.error("Erro ao salvar a categoria:", error);
         }
       }
     };
 
-    // Cancela a edição e restaura o nome original
     const cancelEdit = () => {
-      editedName.value = props.category.name; // Restaura o valor original
-      isEditing.value = false; // Sai do modo de edição
+      editedName.value = props.category.name;
+      isEditing.value = false;
     };
 
     return {
@@ -90,13 +92,13 @@ export default {
       toggleIsEditing,
       saveEdit,
       cancelEdit,
-      deleteCategory
+      deleteCategory,
     };
   },
 };
 </script>
 
-<style>
+<style scoped>
 .child-category {
   padding-left: 30px;
 }
@@ -114,10 +116,10 @@ export default {
   border-bottom: solid 1px #bbb;
   background-color: #ccc;
 }
-.child-category .line{
+.child-category .line {
   background-color: #ddd;
 }
-.child-category .child-category .line{
+.child-category .child-category .line {
   background-color: #eee;
 }
 </style>

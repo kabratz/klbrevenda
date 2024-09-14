@@ -158,8 +158,10 @@ export default {
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
+            alert("Categoria salva com sucesso!");
             window.location.reload();
           } else {
+            alert("Erro ao salvar categoria! Tente novamente mais tarde.");
             console.error("Failed to save product:", data);
           }
         })
