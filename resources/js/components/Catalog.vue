@@ -200,10 +200,23 @@
       <h2>Carrinho</h2>
       <ul>
         <li v-for="item in cartItems" :key="item.id">
-          <img
-            :src="`/storage/${findImage(item.id)?.file}`"
-            :alt="`${findImage(item.id)?.name}`"
-          />
+          <picture>
+            <source
+              :src="`/storage/${findImage(item.id)?.file}`"
+              :alt="`${findImage(item.id)?.name}`"
+            />
+            <source
+              :src="`/default.png`"
+              alt="Default Image"
+              style="cursor: pointer; width: 100px; height: 100px"
+            />
+            <img
+              :src="`/storage/${findImage(item.id)?.file}`"
+              :alt="`${findImage(item.id)?.name}`"
+              @error="handleError"
+            />
+          </picture>
+
           {{ item.name }} - {{ currencyFormat(item.price) }}
           <div class="quantity-box">
             <button @click="removeFromCart(item)">-</button>{{ item.quantity }}
@@ -482,6 +495,7 @@ export default {
         return {
           ...item,
           price: product ? product.price : item.price,
+          quantity: Math.min(item.quantity, product ? product.quantity : item.quantity),
         };
       });
 
@@ -528,6 +542,7 @@ export default {
             this.whatsappLink = response.data.whatsapp_link;
             this.cart = response.data;
             this.clearCart();
+            this.getProducts();
           })
           .catch((error) => {
             if (error.response && error.response.status === 419) {

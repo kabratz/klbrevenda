@@ -54,6 +54,10 @@ class OrderController extends Controller
                     'discount' => 0,
                     'discount_percent' => 0,
                 ]);
+
+                $product->quantity -= $cartItem['quantity'];
+                $product->save();
+                
                 $orderSummary .= "{$product->name} - {$cartItem['quantity']} x {$cartItem['price']} = " . ($cartItem['quantity'] * $cartItem['price']) . " \n";
             }
 
