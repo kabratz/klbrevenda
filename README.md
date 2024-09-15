@@ -10,31 +10,72 @@
 <h2>Para rodar o sistema</h2>
 
 <h3>Clonar o repositório</h3>
-Por meio do git pode ser clonado via:
 
 <code>git clone https://github.com/kabratz/klbrevenda.git</code>
+
 <hr>
+
 <h3>Requisitos</h3>
+
 Ter PHP, composer e npm instalados na máquina.
 
 <hr>
+
 <h3>Setups Iniciais</h3>
+<hr>
+
 <h4>Copiar env</h4>
 
 <code>cp .env.example .env</code>
 
-<p>
-    <strong>
-        Alterar os dados do banco para seu banco local
-    </strong>
-</p>
+<hr>
+
+<h4>Alterar os dados do banco para seu banco local</h4>
+
+Devem ser alterados os seguintes dados (com sua conexão) dentro do arquivo <code>.env</code>.
+
+<code>DB_CONNECTION=
+DB_HOST=
+DB_PORT=
+DB_DATABASE=
+DB_USERNAME=
+DB_PASSWORD=
+</code>
+
+<hr>
 
 <h4>Instalar dependências</h4>
+
+<h5>Dependências do composer</h5>
+
 <code>composer install</code>
+
+<h5>Dependências do npm</h5>
 
 <code>npm install</code>
 
 <hr>
+
+<h3>Configurações do laravel</h3>
+
+<code>php artisan key:generate</code>
+
+<hr>
+
+<h3>Rodar criação das tabelas no banco de dados</h3>
+
+<code>php artisan migrate</code>
+
+<hr>
+
+<h3>Rodar população inicial do banco de dados</h3>
+
+Esse comando irá popular as tabelas: brands, categories e users
+
+<code>php artisan db:seed</code>
+
+<hr>
+
 <h3>Rodar os comandos que sobem o servidor</h3>
 <p>
     Em uma aba do terminal:
@@ -43,6 +84,7 @@ Ter PHP, composer e npm instalados na máquina.
     <br>
     Acessar link gerado pelo comando acima (default http://127.0.0.1:8000/)
 </p>
+
 
 <p>
     Em outra aba (manter a anterior aberta):
