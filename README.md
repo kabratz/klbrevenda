@@ -30,7 +30,10 @@ Ter PHP, composer e npm instalados na máquina.
 </p>
 
 <h4>Instalar dependências</h4>
+<code>composer install</code>
+
 <code>npm install</code>
+
 <hr>
 <h3>Rodar os comandos que sobem o servidor</h3>
 <p>
