@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
-    private $myContact = '551981472522';
+    private $myContact = '5551981472522';
     
     public function create(Request $request)
     {

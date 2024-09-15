@@ -8,13 +8,11 @@ import phoneMaskDirective from './phone-mask-directive';
 const app = createApp(App);
 
 // Importa os componentes
-import ExampleComponent from './components/ExampleComponent.vue';
 import ListProducts from './components/admin/ListProducts.vue';
 import ImportProducts from './components/admin/ImportProducts.vue';
 import Header from './components/admin/Header.vue';
 
 // Registra os componentes globalmente
-app.component('example-component', ExampleComponent);
 app.component('list-products', ListProducts);
 app.component('import-products', ImportProducts);
 app.component('header-admin', Header);

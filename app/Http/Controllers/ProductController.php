@@ -102,9 +102,7 @@ class ProductController extends Controller
                             'product_id' => $product->id,
                         ]);
                     } catch (\Exception $e) {
-                        dd($e->getMessage());
-                        // Tratar erros de download ou salvamento
-                        //\Log::error('Erro ao processar a imagem: ' . $e->getMessage());
+                        return response()->json(['success' => false, 'message' => 'Erro ao processar a imagem: ' . $e->getMessage()], 500);
                     }
                 }
             }
@@ -197,7 +195,6 @@ class ProductController extends Controller
         if ($request->has('images')) {
             $images = $request->input('images');
 
-            dd($images);
             foreach ($images as $key => $image) {
                 $imageId = $image['id'];
                 if ($imageId) {
@@ -219,7 +216,7 @@ class ProductController extends Controller
         }
 
 
-        return response()->json(['success' => true, 'message' => 'Product updated successfully', 'product' => $product->with('brand')->with(categories)]);
+        return response()->json(['success' => true, 'message' => 'Product updated successfully', 'product' => $product->with('brand')->with('categories')]);
     }
 
 

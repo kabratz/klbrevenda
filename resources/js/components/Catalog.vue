@@ -55,6 +55,7 @@
 
       <!-- Ícone do Carrinho -->
       <div class="cart-icon">
+        <span v-if="cartMessage" class="cart-message">{{ cartMessage }}</span>
         <a href="#" @click="toggleCart">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -199,7 +200,11 @@
     <div class="cart-sidebar" :class="{ visible: cartVisible }">
       <h2>Carrinho</h2>
       <ul>
-        <li v-for="item in cartItems" :key="item.id">
+        <li
+          v-for="item in cartItems"
+          :key="item.id"
+          :class="{ 'cart-out-of-stock': item.quantity <= 0 }"
+        >
           <picture>
             <source
               :src="`/storage/${findImage(item.id)?.file}`"
@@ -216,8 +221,13 @@
               @error="handleError"
             />
           </picture>
-
-          {{ item.name }} - {{ currencyFormat(item.price) }}
+          <div class="product-resume">
+            <span v-if="item.quantity <= 0" class="out-of-stock-cart"
+              >Produto Indisponível</span
+            >
+            <h3>{{ item.name }}</h3>
+            <p>{{ currencyFormat(item.price) }}</p>
+          </div>
           <div class="quantity-box">
             <button @click="removeFromCart(item)">-</button>{{ item.quantity }}
             <button @click="addToCart(item)">+</button>
@@ -308,21 +318,6 @@
       </div>
     </div>
   </div>
-  <footer>
-    <p>© 2024 - Todos os direitos reservados</p>
-
-    <a
-      href="https://www.linkedin.com/in/karoline-luersen-bratz/"
-      class="developer-info"
-      target="_blank"
-    >
-      <img
-        :src="`/creator.jpeg`"
-        :alt="`Foto de Karoline Luersen Bratz, desenvolvedora do Site`"
-      />
-      <p>Desenvolvido por Karoline Luersen Bratz</p>
-    </a>
-  </footer>
 </template>
 
 <script>
@@ -359,6 +354,7 @@ export default {
       whatsappLink: "",
       navbarVisible: false,
       setInterval: false,
+      cartMessage: null,
     };
   },
   mounted() {
@@ -375,7 +371,7 @@ export default {
           .getAttribute("content");
 
         const response = await axios.get("/api/products");
-        this.products = response.data.products;
+        this.products = []//response.data.products;
         this.brands = response.data.brands;
         this.categories = response.data.categories;
 
@@ -440,7 +436,6 @@ export default {
 
     filterBySearch() {
       this.navbarVisible = false;
-      console.log(this.search);
       this.filterProducts();
     },
     addToCart(product) {
@@ -467,6 +462,10 @@ export default {
 
       this.loadCart();
       this.cartVisible = true;
+      this.showBrands = false;
+      this.showCategories = false;
+      this.navbarVisible = false;
+      this.showModal = false;
     },
     removeFromCart(product) {
       let cart = getCookie("cart") || [];
@@ -492,13 +491,22 @@ export default {
 
       this.cartItems = cart.map((item) => {
         const product = this.products.find((product) => product.id === item.id);
+        let newQuantity = Math.min(
+          item.quantity,
+          product ? product.quantity : item.quantity
+        );
+        if (newQuantity !== item.quantity) {
+          this.cartMessage = `Há alterações no seu carrinho`;
+        }
         return {
           ...item,
           price: product ? product.price : item.price,
-          quantity: Math.min(item.quantity, product ? product.quantity : item.quantity),
+          quantity: newQuantity,
         };
       });
 
+      deleteCookie("cart");
+      setCookie("cart", this.cartItems, 7);
       this.cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
       this.totalPrice = this.cartItems.reduce(
         (total, item) => total + item.quantity * item.price,
@@ -507,6 +515,7 @@ export default {
     },
     toggleCart() {
       this.cartVisible = !this.cartVisible;
+      this.cartMessage = null;
       this.navbarVisible = false;
 
       this.showModal = false;
@@ -515,46 +524,55 @@ export default {
     },
 
     toggleCheckoutForm() {
+      if (!this.checkoutVisible) {
+        if (this.cartItems.length === 0) {
+          alert("Adicione produtos ao carrinho para finalizar a compra");
+          return;
+        }
+        if (this.cartItems.some((item) => item.quantity === 0)) {
+          removeFromCart(item);
+          return;
+        }
+      }
       this.checkoutVisible = !this.checkoutVisible;
     },
     completeCheckout() {
-      if (this.customerName && this.customerWhatsapp) {
-        console.log(this.csrfToken);
-
-        axios
-          .post(
-            "/api/order",
-            {
-              cart: this.cartItems,
-              customer: {
-                name: this.customerName,
-                whatsapp: this.customerWhatsapp.replace(/\D/g, ""),
-              },
-            },
-            {
-              headers: {
-                "X-CSRF-TOKEN": this.csrfToken, // Usa o token CSRF do HTML
-              },
-            }
-          )
-          .then((response) => {
-            this.orderConfirmationVisible = true;
-            this.whatsappLink = response.data.whatsapp_link;
-            this.cart = response.data;
-            this.clearCart();
-            this.getProducts();
-          })
-          .catch((error) => {
-            if (error.response && error.response.status === 419) {
-              alert("Por favor, atualize a página e tente novamente.");
-              return;
-            }
-            alert("Ocorreu um erro, tente novamente mais tarde!");
-            console.error("Erro:", error);
-          });
-      } else {
-        alert("Por favor, preencha todos os campos.");
+      if (!this.customerName || !this.customerWhatsapp) {
+        alert("Preencha o nome e o whatsapp para finalizar a compra");
+        return;
       }
+
+      axios
+        .post(
+          "/api/order",
+          {
+            cart: this.cartItems,
+            customer: {
+              name: this.customerName,
+              whatsapp: this.customerWhatsapp.replace(/\D/g, ""),
+            },
+          },
+          {
+            headers: {
+              "X-CSRF-TOKEN": this.csrfToken,
+            },
+          }
+        )
+        .then((response) => {
+          this.orderConfirmationVisible = true;
+          this.whatsappLink = response.data.whatsapp_link;
+          this.cart = response.data;
+          this.clearCart();
+          this.getProducts();
+        })
+        .catch((error) => {
+          if (error.response && error.response.status === 419) {
+            alert("Por favor, atualize a página e tente novamente.");
+            return;
+          }
+          alert("Ocorreu um erro, tente novamente mais tarde!");
+          console.error("Erro:", error);
+        });
     },
     findImage(productId) {
       let product = this.products.find((product) => product.id === productId);

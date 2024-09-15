@@ -24,7 +24,7 @@
     <div class="modal-product-content">
       <form @submit.prevent="saveCategory" class="modal-product-body">
         <label>Nome</label>
-        <input v-model="editableCategory.name" type="text" />
+        <input v-model="editableCategory.name" type="text" required />
 
         <!-- Select de pai -->
         <div class="form-group">
@@ -142,6 +142,11 @@ export default {
     },
 
     saveCategory() {
+      if (!this.editableCategory.name) {
+        alert("Preencha o nome da categoria!");
+        return;
+      }
+
       const url = "/api/categories";
       const method = "POST";
 
@@ -183,7 +188,6 @@ export default {
   padding: 10px;
   font-size: 20px;
 }
-
 
 .button-primary {
   background-color: #007bff;

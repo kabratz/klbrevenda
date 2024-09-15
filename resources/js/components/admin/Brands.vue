@@ -16,8 +16,8 @@
           </div>
           <!-- Botões de ação (Editar, Salvar, Cancelar) -->
           <div class="actions">
-            <button @click.stop="deleteBrand(bran.id)">Excluir</button>
             <button @click.stop="openEditModal(brand)">Editar</button>
+            <button @click.stop="deleteBrand(brand.id)">Excluir</button>
           </div>
         </div>
       </div>
@@ -33,7 +33,7 @@
     <div class="modal-product-content">
       <form @submit.prevent="saveBrand" class="modal-product-body">
         <label>Nome</label>
-        <input v-model="editableBrand.name" type="text" />
+        <input v-model="editableBrand.name" type="text" required/>
 
         <button type="submit" class="button-primary">
           {{ isEditing ? "Salvar alterações" : "Criar marca" }}
@@ -130,6 +130,11 @@ export default {
     },
 
     saveBrand() {
+      if (!this.editableBrand.name) {
+        alert("Por favor, preencha o nome da marca.");
+        return;
+      }
+
       const url = this.isEditing ? `/api/brands/${this.editableBrand.id}` : "/api/brands";
       const method = this.isEditing ? "PUT" : "POST";
 

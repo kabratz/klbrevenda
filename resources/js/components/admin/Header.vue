@@ -1,6 +1,6 @@
 <template>
-  <header>
-    <div class="container header-container">
+  <header class="header-container">
+    <div class="container">
       <!-- Logotipo -->
       <div class="logo">
         <a href="#">
@@ -12,9 +12,9 @@
       <a href="/brands" class="card-header">Marcas</a>
       <a href="/categories" class="card-header">Categorias</a>
       <!-- Barra de Navegação -->
-      <nav class="navbar">
+      <nav>
         <p v-if="isLoggedIn" class="welcome-message">
-          Bem-vindo(a) de volta, {{ username }}!
+          Bem-vindo(a) de volta, {{ username.split('@')[0] }}!
           <button @click="handleLogout" class="logout-button">Logout</button>
         </p>
         <p v-else class="login-message">Por favor, logue para acessar sua conta.</p>
@@ -64,6 +64,10 @@ export default {
   padding: 10px;
   background-color: #f5f5f5;
   border-bottom: 1px solid #ddd;
+}
+
+.header-container .container {
+  width: 100%;
 }
 
 .logo img {

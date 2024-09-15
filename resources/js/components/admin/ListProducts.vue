@@ -238,21 +238,21 @@
                   </div>
                 </div>
                 <div class="details" :class="{ active: isActive(product.id) }">
-                  <p><strong>Descrição:</strong> {{ product.description }}</p>
+                  <p><strong>Descrição:</strong> <span v-html="product.description"></span></p>
                   <p class="brand-detail">
                     <strong>Marca:</strong> {{ product.brand.name }}
                   </p>
                   <p class="quantity-detail">
-                    <strong>Quantidade:</strong> {{ product.brand.name }}
+                    <strong>Quantidade:</strong> {{ product.quantity }}
                   </p>
                   <p><strong>Preço:</strong> R${{ product.price }}</p>
                   <p><strong>Gênero:</strong> {{ product.gender }}</p>
                   <p>
-                    <strong>Google Category:</strong>
+                    <strong>Categoria Google:</strong>
                     {{ product.google_product_category }}
                   </p>
                   <p>
-                    <strong>Facebook Category:</strong> {{ product.fb_product_category }}
+                    <strong>Categoria Facebook:</strong> {{ product.fb_product_category }}
                   </p>
                   <p><strong>SKU:</strong> {{ product.sku }}</p>
                   <div v-if="product.categories.length">
@@ -322,13 +322,13 @@
     </div>
     <div class="modal-product" :class="{ active: isModalActive }">
       <div class="modal-header">
-        <h4>{{ isEditing ? "Edit Product" : "Create Product" }}</h4>
+        <h4>{{ isEditing ? "Editar produto" : "Criar produto" }}</h4>
         <button class="button-close-modal" @click="closeModal">&times;</button>
       </div>
       <div class="modal-product-content">
         <form @submit.prevent="saveProduct" class="modal-product-body">
           <label>Nome</label>
-          <input v-model="editableProduct.name" type="text" />
+          <input v-model="editableProduct.name" type="text" required />
 
           <label>Descrição</label>
           <!-- <textarea v-model="editableProduct.description"></textarea> -->
@@ -336,23 +336,23 @@
           <!-- Editor Quill -->
 
           <label>Preço</label>
-          <input v-model="editableProduct.price" type="number" step="0.01" />
+          <input v-model="editableProduct.price" type="number" step="0.01" required />
 
           <label>Quantidade</label>
-          <input v-model="editableProduct.quantity" type="number" />
+          <input v-model="editableProduct.quantity" type="number" required />
 
-          <label>Google Category</label>
+          <label>Categoria Google</label>
           <input v-model="editableProduct.google_product_category" type="text" />
 
-          <label>Facebook Category</label>
+          <label>Categoria Facebook</label>
           <input v-model="editableProduct.fb_product_category" type="text" />
 
           <label>SKU</label>
-          <input v-model="editableProduct.sku" type="text" />
+          <input v-model="editableProduct.sku" type="text" required />
 
           <!-- Select de Gênero -->
           <div class="form-group">
-            <label for="gender">Fênero:</label>
+            <label for="gender">Gênero:</label>
             <select v-model="editableProduct.gender" id="gender" class="form-control">
               <option disabled value="">Selecione o gênero</option>
               <option value="female">Feminino</option>
@@ -364,7 +364,12 @@
           <!-- Select de Marcas -->
           <div class="form-group">
             <label for="brand">Marca:</label>
-            <select v-model="editableProduct.brand_id" id="brand" class="form-control">
+            <select
+              v-model="editableProduct.brand_id"
+              id="brand"
+              class="form-control"
+              required
+            >
               <option disabled value="">Selecione a marca</option>
               <option
                 v-for="brand in this.localProducts.brands"
@@ -386,6 +391,7 @@
                   :id="category.id"
                   v-model="editableProduct.categoriesId"
                   type="checkbox"
+                  required
                 />
                 {{ category.name }}
               </label>
@@ -402,6 +408,7 @@
               <input
                 type="file"
                 @change="handleImageUpload($event, editableProduct.id, index)"
+                required
               />
               <img
                 :src="image.previewUrl || `/storage/${image.file}`"
@@ -540,6 +547,37 @@ export default {
       document.body.classList.remove("no-scroll");
     },
     saveProduct() {
+      if (!this.editableProduct.categoriesId.length) {
+        alert("Selecione ao menos uma categoria para o produto!");
+        return;
+      }
+      if (!this.editableProduct.images.length) {
+        alert("Adicione ao menos uma imagem para o produto!");
+        return;
+      }
+      if (!this.editableProduct.brand_id) {
+        alert("Selecione uma marca para o produto!");
+        return;
+      }
+      if (!this.quill.root.innerHTML) {
+        alert("Adicione uma descrição para o produto!");
+        return;
+      }
+
+      if (this.editableProduct.price <= 0) {
+        alert("O preço do produto deve ser maior que zero!");
+        return;
+      }
+
+      if (this.editableProduct.quantity === null) {
+        alert("A quantidade do produto deve ser informada!");
+        return;
+      }
+      if (!this.editableProduct.name) {
+        alert("O nome do produto deve ser informado!");
+        return;
+      }
+
       const url = this.isEditing
         ? `/api/products/${this.editableProduct.id}`
         : "/api/products";
@@ -575,7 +613,7 @@ export default {
         });
     },
     deleteProduct(productId) {
-      if (confirm("Você tem certeza quopene deseja remover este produto?")) {
+      if (confirm("Você tem certeza que deseja remover este produto?")) {
         fetch(`/api/products/${productId}`, {
           method: "DELETE",
           headers: {

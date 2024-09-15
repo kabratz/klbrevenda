@@ -4,7 +4,7 @@
       <!-- Verifica se a categoria está sendo editada -->
       <div class="column">
         <div v-if="isEditing">
-          <input @click.stop v-model="editedName" />
+          <input @click.stop v-model="editedName" required />
         </div>
         <div v-else>
           {{ category.name }}
@@ -51,6 +51,10 @@ export default {
     };
 
     const saveEdit = async () => {
+      if (!editedName.value) {
+        alert("O nome da categoria não pode ser vazio!");
+        return;
+      }
       try {
         await axios.put(`/api/categories/${props.category.id}`, {
           name: editedName.value,
@@ -59,7 +63,7 @@ export default {
         isEditing.value = false;
         alert("Categoria salva com sucesso!");
       } catch (error) {
-          alert("Erro ao salvar categoria! Tente novamente mais tarde.");
+        alert("Erro ao salvar categoria! Tente novamente mais tarde.");
         console.error("Erro ao salvar a categoria:", error);
       }
     };
