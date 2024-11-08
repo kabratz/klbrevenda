@@ -371,7 +371,7 @@ export default {
           .getAttribute("content");
 
         const response = await axios.get("/api/products");
-        this.products = []//response.data.products;
+        this.products = response.data.products;
         this.brands = response.data.brands;
         this.categories = response.data.categories;
 
