@@ -391,7 +391,6 @@
                   :id="category.id"
                   v-model="editableProduct.categoriesId"
                   type="checkbox"
-                  required
                 />
                 {{ category.name }}
               </label>
