@@ -407,7 +407,6 @@
               <input
                 type="file"
                 @change="handleImageUpload($event, editableProduct.id, index)"
-                required
               />
               <img
                 :src="image.previewUrl || `/storage/${image.file}`"
