@@ -589,7 +589,7 @@ export default {
       if (this.imagesToRemove.length > 0){
         this.editableProduct.imagesToRemove = this.imagesToRemove;
       }
-
+      console.log()
       fetch(url, {
         method: method,
         headers: {
@@ -654,7 +654,7 @@ export default {
         reader.readAsDataURL(file);
         this.editableProduct.images[index].file = file;
 
-        // Envia a imagem para o servidor
+
         const formData = new FormData();
         formData.append("image", file);
 

@@ -23,4 +23,18 @@ class Order extends Model
         'created_at',
         'updated_at',
     ];
+
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
+    }
+
+    public function ordersProduct()
+    {
+
+        return $this->hasMany(OrdersProduct::class);
+    }
+
+
 }

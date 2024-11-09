@@ -49,3 +49,6 @@ Route::get('/brands', [BrandController::class, 'index']);
 Route::put('/brands/{id}', [BrandController::class, 'update']);
 Route::delete('/brands/{id}', [BrandController::class, 'destroy']);
 Route::post('/brands', [BrandController::class, 'store']);
+
+Route::get('/orders', [OrderController::class, 'index']);
+

@@ -238,7 +238,15 @@
       <!-- Resumo do Carrinho -->
       <div class="cart-summary">
         <p>Total de Itens: {{ cartItemCount }}</p>
-        <p>Valor Total: {{ currencyFormat(totalPrice) }}</p>
+        <p>Valor total produtos: {{ currencyFormat(totalPrice) }}</p>
+        <p style="color: red">
+          Total de Desconto: - {{ currencyFormat(totalDiscount) }} ({{
+            myDiscountPercent * 100
+          }}%)
+        </p>
+        <p>
+          <strong>Total Final: {{ currencyFormat(totalPriceWithDiscount) }}</strong>
+        </p>
       </div>
 
       <button @click="toggleCheckoutForm">Finalizar Pedido</button>
@@ -292,7 +300,7 @@
           <p>Seu pedido foi criado com sucesso!</p>
           <p>
             Para confirmar seu pedido, você pode enviar uma mensagem para o nosso WhatsApp
-            com o resumo do pedido.
+            com o resumo do pedido.<small>*</small>
           </p>
           <p>O pagamento será combinado assim que confirmarmos seu pedido. Obrigado!</p>
           <p>
@@ -304,7 +312,11 @@
               >Enviar no WhatsApp</a
             >
           </p>
+          <p>
+            <small>*O pedido só estará confirmado quando você receber uma mensagem de confirmação.</small>
+          </p>
         </div>
+
         <div class="modal-footer">
           <button
             type="button"
@@ -347,6 +359,15 @@ export default {
       cartItemCount: 0,
       checkoutVisible: false,
       totalPrice: 0,
+      totalPriceWithDiscount: 0,
+      totalDiscount: 0,
+      myDiscountPercent: 0,
+      percentDiscount: {
+        0: 0,
+        1: 0.05,
+        2: 0.1,
+        n: 0.15,
+      },
       customerName: null,
       customerWhatsapp: null,
       csrfToken: null,
@@ -508,10 +529,17 @@ export default {
       deleteCookie("cart");
       setCookie("cart", this.cartItems, 7);
       this.cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
+
       this.totalPrice = this.cartItems.reduce(
         (total, item) => total + item.quantity * item.price,
         0
       );
+
+      this.myDiscountPercent = this.percentDiscount[this.cartItemCount]
+        ? this.percentDiscount[this.cartItemCount]
+        : this.percentDiscount["n"];
+      this.totalDiscount = this.totalPrice * this.myDiscountPercent;
+      this.totalPriceWithDiscount = this.totalPrice - this.totalDiscount;
     },
     toggleCart() {
       this.cartVisible = !this.cartVisible;
@@ -608,6 +636,13 @@ export default {
       this.cartItems = [];
       this.totalItems = 0;
       this.totalPrice = 0;
+      this.totalPriceWithDiscount = 0;
+      this.totalDiscount = 0;
+      this.myDiscountPercent = 0;
+      this.cartItemCount = 0;
+      this.cartMessage = null;
+      this.customerName = "";
+      this.customerWhatsapp = "";
       this.cartVisible = false;
       this.checkoutVisible = false;
       deleteCookie("cart");

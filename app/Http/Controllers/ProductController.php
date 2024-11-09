@@ -134,35 +134,43 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $product = new Product();
-        $product->name = $request->input('name');
-        $product->description = $request->input('description');
-        $product->price = $request->input('price');
-        $product->quantity = $request->input('quantity');
-        $product->google_product_category = $request->input('google_product_category');
-        $product->fb_product_category = $request->input('fb_product_category');
-        $product->gender = $request->input('gender');
-        $product->brand_id = $request->input('brand_id');
-        $product->sku = $request->input('sku');
-        $product->save();
 
-        $categories = $request->input('categoriesId');
-        $product->categories()->sync($categories);
+        try {
 
-        $images = $request->input('images');
-        if($images) {
-            foreach ($images as $key => $image) {
-                if ($image['file']){
-                    $image = new Image();
-                    $image->name = 'Image ' . ($key + 1);
-                    $image->file = $image['file'];
-                    $image->product_id = $product->id;
-                    $image->save();
+            $product = new Product();
+            $product->name = $request->input('name');
+            $product->description = $request->input('description');
+            $product->price = $request->input('price');
+            $product->quantity = $request->input('quantity');
+            $product->google_product_category = $request->input('google_product_category');
+            $product->fb_product_category = $request->input('fb_product_category');
+            $product->gender = $request->input('gender');
+            $product->brand_id = $request->input('brand_id');
+            $product->sku = $request->input('sku');
+            $product->save();
+
+            $categories = $request->input('categoriesId');
+            $product->categories()->sync($categories);
+
+            $images = $request->input('images');
+            if ($images) {
+                foreach ($images as $key => $image) {
+                    if (array_key_exists('file', $image)) {
+                        $imageModel = Image::create([
+                            'id' => Str::uuid(),
+                            'name' => 'Image ' . ($key + 1),
+                            'file' => $image['file'],
+                            'product_id' => $product->id,
+                        ]);
+                        $product->images[$key] = $imageModel;
+                    }
                 }
             }
-        }
 
-        return response()->json(['success' => true, 'message' => 'Product created successfully', 'product' => $product], 201);
+            return response()->json(['success' => true, 'message' => 'Product created successfully', 'product' => $product], 201);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erro ao processar a imagem: ' . $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -173,62 +181,66 @@ class ProductController extends Controller
      */
     public function update(Request $request)
     {
-        $id = $request->input('id');
+        try {
 
-        $product = Product::findOrFail($id);
-        $product->name = $request->input('name');
-        $product->description = $request->input('description');
-        $product->price = $request->input('price');
-        $product->quantity = $request->input('quantity');
-        $product->google_product_category = $request->input('google_product_category');
-        $product->fb_product_category = $request->input('fb_product_category');
-        $product->gender = $request->input('gender');
-        $product->brand_id = $request->input('brand_id');
-        $product->sku = $request->input('sku');
-        $product->save();
+            $id = $request->input('id');
 
-        if ($request->has('categoriesId')) {
-            $categories = $request->input('categoriesId');
-            $product->categories()->sync($categories);
-        }
+            $product = Product::findOrFail($id);
+            $product->name = $request->input('name');
+            $product->description = $request->input('description');
+            $product->price = $request->input('price');
+            $product->quantity = $request->input('quantity');
+            $product->google_product_category = $request->input('google_product_category');
+            $product->fb_product_category = $request->input('fb_product_category');
+            $product->gender = $request->input('gender');
+            $product->brand_id = $request->input('brand_id');
+            $product->sku = $request->input('sku');
+            $product->save();
 
-        if ($request->has('images')) {
-            $images = $request->input('images');
-
-            foreach ($images as $key => $image) {
-                $imageId = $image['id'];
-                if ($imageId) {
-                    $imageModel = Image::findOrFail($imageId);
-                    $imageModel->product_id = $product->id;
-                    $imageModel->file = $image['file'];
-                    $imageModel->save();
-                    continue;
-                }
-
-                $imageModel = Image::create([
-                    'id' => Str::uuid(),
-                    'name' => 'Image ' . ($key + 1),
-                    'file' => $image['file'],
-                    'product_id' => $product->id,
-                ]);
-                $product->images[$key] = $imageModel;
+            if ($request->has('categoriesId')) {
+                $categories = $request->input('categoriesId');
+                $product->categories()->sync($categories);
             }
-        }
 
-        if ($request->has('imagesToRemove')) {
-            $imagesToRemove = $request->input('imagesToRemove');
+            if ($request->has('images')) {
+                $images = $request->input('images');
 
-            foreach ($imagesToRemove as $key => $image) {
-                $imageId = $image['id'];
-                if ($imageId) {
-                    $imageModel = Image::findOrFail($imageId);
-                    $imageModel->delete();
-                    continue;
+                foreach ($images as $key => $image) {
+                    if (array_key_exists('id', $image)) {
+                        $imageModel = Image::findOrFail($image['id']);
+                        $imageModel->product_id = $product->id;
+                        $imageModel->file = $image['file'];
+                        $imageModel->save();
+                        continue;
+                    }
+
+                    $imageModel = Image::create([
+                        'id' => Str::uuid(),
+                        'name' => 'Image ' . ($key + 1),
+                        'file' => $image['file'],
+                        'product_id' => $product->id,
+                    ]);
+                    $product->images[$key] = $imageModel;
                 }
             }
-        }
 
-        return response()->json(['success' => true, 'message' => 'Product updated successfully', 'product' => $product->with('brand')->with('categories')]);
+            if ($request->has('imagesToRemove')) {
+                $imagesToRemove = $request->input('imagesToRemove');
+
+                foreach ($imagesToRemove as $key => $image) {
+                    if (array_key_exists('id', $image)) {
+                        $imageModel = Image::findOrFail($image['id']);
+                        $imageModel->delete();
+                        continue;
+                    }
+                }
+            }
+
+            return response()->json(['success' => true, 'message' => 'Product updated successfully', 'product' => $product->with('brand')->with('categories')]);
+        } catch (\Exception $e) {
+            dd($e);die;
+            return response()->json(['success' => false, 'message' => 'Erro ao atualizar o produto: ' . $e->getMessage()], 500);
+        }
     }
 
 

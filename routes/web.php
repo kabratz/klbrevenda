@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,11 +16,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 
-
-Route::get('/example', function () {
-    return view('example');
-});
-
 Route::get('/{any}', function () {
     return view('app'); // Certifique-se de que 'app.blade.php' está correto
 })->where('any', '.*');
@@ -29,6 +25,7 @@ Route::post('/products', [ProductController::class, 'store']);
 Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 Route::put('/products/{id}', [ProductController::class, 'update']);
 Route::put('/products', [ProductController::class, 'update']);
+Route::get('/admin/orders', [OrderController::class, 'index']);
 
 
 Route::post('/order', [OrderController::class, 'create']);

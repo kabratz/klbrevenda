@@ -5,6 +5,7 @@ import ImportProducts from './components/admin/ImportProducts.vue';
 import Catalog from './components/Catalog.vue';
 import Categories from './components/admin/Categories.vue';
 import Brands from './components/admin/Brands.vue';
+import Orders from './components/admin/Orders.vue';
 
 // Defina suas rotas
 const routes = [
@@ -13,6 +14,7 @@ const routes = [
   { path: '/categories', component: Categories, meta: { requiresAuth: true } },
   { path: '/brands', component: Brands, meta: { requiresAuth: true } },
   { path: '/products/import', component: ImportProducts, meta: { requiresAuth: true } },
+  { path: '/orders', component: Orders, meta: { requiresAuth: true } },
   { path: '/', component: Catalog, meta: { requiresAuth: false } }
 
 ];
