@@ -215,6 +215,18 @@ class ProductController extends Controller
             }
         }
 
+        if ($request->has('imagesToRemove')) {
+            $imagesToRemove = $request->input('imagesToRemove');
+
+            foreach ($imagesToRemove as $key => $image) {
+                $imageId = $image['id'];
+                if ($imageId) {
+                    $imageModel = Image::findOrFail($imageId);
+                    $imageModel->delete();
+                    continue;
+                }
+            }
+        }
 
         return response()->json(['success' => true, 'message' => 'Product updated successfully', 'product' => $product->with('brand')->with('categories')]);
     }

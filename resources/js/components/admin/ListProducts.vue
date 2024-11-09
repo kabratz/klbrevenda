@@ -238,7 +238,9 @@
                   </div>
                 </div>
                 <div class="details" :class="{ active: isActive(product.id) }">
-                  <p><strong>Descrição:</strong> <span v-html="product.description"></span></p>
+                  <p>
+                    <strong>Descrição:</strong> <span v-html="product.description"></span>
+                  </p>
                   <p class="brand-detail">
                     <strong>Marca:</strong> {{ product.brand.name }}
                   </p>
@@ -415,7 +417,7 @@
                 @click="openImageModal(image.previewUrl || image.file)"
               />
 
-              <button @click="removeImage(index)">Remover Imagem</button>
+              <button @click="removeImageField(index)">Remover Imagem</button>
             </div>
             <button type="button" @click="addImageField()">Adicionar Nova Imagem</button>
           </div>
@@ -463,6 +465,7 @@ export default {
       currentImage: "",
       quill: null,
       navbarVisible: false,
+      imagesToRemove: [],
     };
   },
   created() {
@@ -500,6 +503,7 @@ export default {
       return this.activeProductId === productId;
     },
     openEditModal(product) {
+      this.imagesToRemove = [];
       this.isEditing = true;
       this.editableProduct = {
         ...product,
@@ -582,6 +586,10 @@ export default {
       const method = this.isEditing ? "PUT" : "POST";
 
       this.editableProduct.description = this.quill.root.innerHTML;
+      if (this.imagesToRemove.length > 0){
+        this.editableProduct.imagesToRemove = this.imagesToRemove;
+      }
+
       fetch(url, {
         method: method,
         headers: {
@@ -677,6 +685,7 @@ export default {
       this.editableProduct.images.push({ url: "", file: null });
     },
     removeImageField(index) {
+      this.imagesToRemove.push(this.editableProduct.images[index])
       this.editableProduct.images.splice(index, 1);
     },
     getImageSrc(imagePath) {
